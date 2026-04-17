@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gry komputerowe</title>
     <link rel="stylesheet" href="styl.css">
 </head>
+
 <body>
 
-<?php
+    <?php
+
+    use Dom\Document;
 
     $server = 'localhost';
     $user = 'root';
@@ -24,105 +28,156 @@
 
 
     ?>
-    
-<div class="head">
 
-<h1>Ranking gier komputerowych</h1>
+    <div class="head">
 
-</div>
+        <h1>Ranking gier komputerowych</h1>
 
-<div class="left">
+    </div>
 
-<h3>Top 5 gier w tym miesiącu</h3>
+    <div class="left">
 
-<ul>
+        <h3>Top 5 gier w tym miesiącu</h3>
 
-<?php
+        <ul>
 
-$connection = mysqli_connect($server, $user, $password, $database);
+            <?php
 
-$query = "SELECT nazwa,punkty FROM `gry` order by punkty DESC limit 5";
+            $connection = mysqli_connect($server, $user, $password, $database);
 
-$result = mysqli_query($connection,$query);
+            $query = "SELECT nazwa,punkty FROM `gry` order by punkty DESC limit 5";
+
+            $result = mysqli_query($connection, $query);
 
 
-while($dane = mysqli_fetch_array($result)){
-    echo "<li>
+            while ($dane = mysqli_fetch_array($result)) {
+                echo "<li>
     
 $dane[nazwa]
 
     </li>
     
-    <li>
+    <li class='pun'>
     
 $dane[punkty]
-
+,0
     </li>
 
     ";
-}
+            }
 
-?>
+            ?>
 
-</ul>
+        </ul>
 
-<h3>Nasz sklep</h3>
+        <h3>Nasz sklep</h3>
 
-<a href="http://sklep.gry.pl ">Tu kupisz gry</a>
+        <a href="http://sklep.gry.pl ">Tu kupisz gry</a>
 
-<h3>Stronę wykonal</h3>
-<p>johny jostar</p>
+        <h3>Stronę wykonal</h3>
+        <p>johny jostar</p>
 
-</div>
+    </div>
 
-<div class="main">
+    <div class="main">
+        <section id="center">
 
-<?php
+            <?php
 
-$connection = mysqli_connect($server, $user, $password, $database);
+            $connection = mysqli_connect($server, $user, $password, $database);
 
-$query2 = "SELECT id,nazwa,zdjecie FROM gry;";
+            $query2 = "SELECT id,nazwa,zdjecie FROM gry;";
 
-$result2 = mysqli_query($query2);
+            $result2 = mysqli_query($connection, $query2);
 
-?>
+            for ($i = 0; $i < mysqli_num_rows($result2); $i++) {
+                $dane1 = mysqli_fetch_array($result2);
+                $zdjecie = $dane1['zdjecie'];
+                $nazwa = $dane1['nazwa'];
+                echo "<img src='$zdjecie'>";
+                echo "<p>$nazwa</p>";
+            }
+            ?>
 
-</div>
 
-<div class="right">
+        </section>
+    </div>
 
-<h3>Dodaj nową grę</h3>
+    <div class="right">
 
-<form method="post">
+        <h3>Dodaj nową grę</h3>
 
-<p>nazwa</p>
-<input>
+        <form method="post">
 
-<p>opis</p>
-<input>
+            <p>nazwa</p>
+            <input name="nazwa">
 
-<p>cena</p>
-<input>
+            <p>opis</p>
+            <input name="opis">
 
-<p>zdjęcie</p>
-<input>
+            <p>cena</p>
+            <input name="cena">
 
-<button type="submit">DODAJ</button>
+            <p>zdjęcie</p>
+            <input name="photo">
 
-</form>
+            <button type="submit">DODAJ</button>
 
-</div>
+            <?php
+            $connection = mysqli_connect($server, $user, $password, $database);
 
-<div class="foot">
+            if ($_SERVER["REQUEST_METHOD"] == "POST"  && isset($_POST["nazwa"]) && isset($_POST["opis"]) && isset($_POST["cena"]) && isset($_POST["photo"])) {
+                $nazwa = mysqli_real_escape_string($connection, $_POST["nazwa"]);
+                $opis = mysqli_real_escape_string($connection, $_POST["opis"]);
+                $cena = (float) $_POST["cena"];
+                $photo = mysqli_real_escape_string($connection, $_POST["photo"]);
 
-<form method="post">
+                $query4 = "INSERT INTO gry (nazwa, opis, punkty, cena, zdjecie) VALUES ('$nazwa', '$opis', 0, $cena, '$photo')";
 
-<input>
-<button type="submit">Pokaż opis</button>
+                $result4 = mysqli_query($connection, $query4);
+                if (!$result4) {
+                    die("Bład");
+                }
+                echo "complete";
+            }
 
-</form>
+            ?>
 
-</div>
+        </form>
+
+    </div>
+
+    <div class="foot">
+
+        <form method="post">
+
+            <input name="idgry">
+            <button type="submit">Pokaż opis</button>
+            <?php
+
+            $connection = mysqli_connect($server, $user, $password, $database);
+
+            if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idgry"])) {
+                $temp = $_POST["idgry"];
+                $query3 = "SELECT gry.nazwa, LEFT(gry.opis, 100) opis,gry.punkty, gry.cena FROM gry WHERE id = $temp;";
+
+                $result3 = mysqli_query($connection, $query3);
+
+                for ($i = 0; $i < mysqli_num_rows($result3); $i++) {
+
+                    $dane3 = mysqli_fetch_array($result3);
+                    $nazwa1 = $dane3['nazwa'];
+                    $puntky = $dane3['punkty'];
+                    $cena = $dane3['cena'];
+                    echo "<h2>$nazwa1 $puntky $cena zl</h2>";
+                }
+            }
+            ?>
+
+        </form>
+
+    </div>
 
 </body>
+
 </html>
